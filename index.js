@@ -35,18 +35,13 @@ Railway Variables:
 
 TOKEN = your Discord bot token
 
-CREATE_CHANNEL_ID = your existing CREATE ROOM
-voice channel ID
-
-Do NOT put your token inside this file.
+CREATE_CHANNEL_ID = your CREATE ROOM voice channel ID
 */
 
 /* =====================================================
    TEMP ROOM SYSTEM
 ===================================================== */
 
-// Invisible marker.
-// It is not visible in the Discord channel name.
 const MARKER = '\u200B';
 
 const tempRooms = new Map();
@@ -85,17 +80,32 @@ function getOwnerId(channel) {
     : null;
 }
 
-async function deleteIfEmpty(channel) {
-  if (!isTempRoom(channel)) return;
+/* =====================================================
+   DELETE EMPTY ROOM — INSTANT
+===================================================== */
 
-  if (channel.members.size > 0) return;
+async function deleteIfEmpty(channel) {
+  if (!channel) return;
+
+  const isOurRoom =
+    tempRooms.has(channel.id) ||
+    isTempRoom(channel);
+
+  if (!isOurRoom) return;
+
+  if (channel.members.size !== 0) return;
 
   tempRooms.delete(channel.id);
 
-  await channel.delete().catch(() => {});
+  await channel.delete().catch(error => {
+    console.error(
+      'DELETE ROOM ERROR:',
+      error
+    );
+  });
 
   console.log(
-    `Deleted empty room: ${getDisplayName(channel)}`
+    `Deleted empty temp VC: ${getDisplayName(channel)}`
   );
 }
 
@@ -121,104 +131,108 @@ function buildPanel(channel) {
       inline: false
     })
     .setFooter({
-      text: 'Fuegos TempVoice • Manage your voice room easily.'
+      text:
+        'Fuegos TempVoice • Manage your voice room easily.'
     });
 
   /* =================================================
      ROW 1
   ================================================= */
 
-  const row1 = new ActionRowBuilder().addComponents(
+  const row1 =
+    new ActionRowBuilder().addComponents(
 
-    new ButtonBuilder()
-      .setCustomId('rename')
-      .setEmoji('✏️')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('rename')
+        .setEmoji('✏️')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('limit')
-      .setEmoji('👥')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('limit')
+        .setEmoji('👥')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('privacy')
-      .setEmoji('🔒')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('privacy')
+        .setEmoji('🔒')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('waiting')
-      .setEmoji('⏳')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('waiting')
+        .setEmoji('⏳')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('chat')
-      .setEmoji('💬')
-      .setStyle(ButtonStyle.Secondary)
-  );
+      new ButtonBuilder()
+        .setCustomId('chat')
+        .setEmoji('💬')
+        .setStyle(ButtonStyle.Secondary)
+    );
 
   /* =================================================
      ROW 2
   ================================================= */
 
-  const row2 = new ActionRowBuilder().addComponents(
+  const row2 =
+    new ActionRowBuilder().addComponents(
 
-    new ButtonBuilder()
-      .setCustomId('trust')
-      .setEmoji('🟢')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('trust')
+        .setEmoji('🟢')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('untrust')
-      .setEmoji('🔴')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('untrust')
+        .setEmoji('🔴')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('invite')
-      .setEmoji('🔗')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('invite')
+        .setEmoji('🔗')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('kick')
-      .setEmoji('📵')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('kick')
+        .setEmoji('📵')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('region')
-      .setEmoji('🌐')
-      .setStyle(ButtonStyle.Secondary)
-  );
+      new ButtonBuilder()
+        .setCustomId('region')
+        .setEmoji('🌐')
+        .setStyle(ButtonStyle.Secondary)
+    );
 
   /* =================================================
      ROW 3
   ================================================= */
 
-  const row3 = new ActionRowBuilder().addComponents(
+  const row3 =
+    new ActionRowBuilder().addComponents(
 
-    new ButtonBuilder()
-      .setCustomId('block')
-      .setEmoji('🚫')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('block')
+        .setEmoji('🚫')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('unblock')
-      .setEmoji('🔓')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('unblock')
+        .setEmoji('🔓')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('claim')
-      .setEmoji('👑')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('claim')
+        .setEmoji('👑')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('transfer')
-      .setEmoji('🔄')
-      .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('transfer')
+        .setEmoji('🔄')
+        .setStyle(ButtonStyle.Secondary),
 
-    new ButtonBuilder()
-      .setCustomId('delete')
-      .setEmoji('🗑️')
-      .setStyle(ButtonStyle.Danger)
-  );
+      new ButtonBuilder()
+        .setCustomId('delete')
+        .setEmoji('🗑️')
+        .setStyle(ButtonStyle.Danger)
+    );
 
   return {
     embeds: [embed],
@@ -236,20 +250,23 @@ function buildPanel(channel) {
 
 function createUserModal(customId, title) {
 
-  const modal = new ModalBuilder()
-    .setCustomId(customId)
-    .setTitle(title);
+  const modal =
+    new ModalBuilder()
+      .setCustomId(customId)
+      .setTitle(title);
 
-  const input = new TextInputBuilder()
-    .setCustomId('user_id')
-    .setLabel('Discord User ID')
-    .setPlaceholder('Enter Discord User ID')
-    .setStyle(TextInputStyle.Short)
-    .setMaxLength(25)
-    .setRequired(true);
+  const input =
+    new TextInputBuilder()
+      .setCustomId('user_id')
+      .setLabel('Discord User ID')
+      .setPlaceholder('Enter Discord User ID')
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(25)
+      .setRequired(true);
 
   modal.addComponents(
-    new ActionRowBuilder().addComponents(input)
+    new ActionRowBuilder()
+      .addComponents(input)
   );
 
   return modal;
@@ -312,12 +329,8 @@ client.on(
         if (!createChannel) return;
 
         /*
-          IMPORTANT:
-
-          We DO NOT use a category ID.
-
-          We take the parent category directly
-          from CREATE ROOM.
+          GET CATEGORY DIRECTLY FROM
+          CREATE ROOM
         */
 
         const parentId =
@@ -332,7 +345,7 @@ client.on(
         );
 
         /* =============================================
-           CREATE ROOM
+           CREATE TEMP ROOM
         ============================================= */
 
         const room =
@@ -397,11 +410,10 @@ client.on(
         console.log(
           `TEMP ROOM CREATED: ${getDisplayName(room)}`
         );
-
       }
 
       /* ===============================================
-         DELETE EMPTY TEMP ROOM
+         INSTANT DELETE WHEN EMPTY
       =============================================== */
 
       if (oldState.channel) {
@@ -564,7 +576,9 @@ client.on(
               .addComponents(input)
           );
 
-          return interaction.showModal(modal);
+          return interaction.showModal(
+            modal
+          );
         }
 
         /* =============================================
@@ -594,7 +608,9 @@ client.on(
               .addComponents(input)
           );
 
-          return interaction.showModal(modal);
+          return interaction.showModal(
+            modal
+          );
         }
 
         /* =============================================
@@ -828,7 +844,9 @@ client.on(
               .addComponents(input)
           );
 
-          return interaction.showModal(modal);
+          return interaction.showModal(
+            modal
+          );
         }
 
         /* =============================================
@@ -998,7 +1016,9 @@ client.on(
             });
           }
 
-          await channel.setUserLimit(value);
+          await channel.setUserLimit(
+            value
+          );
 
           return interaction.reply({
             content:
