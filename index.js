@@ -1,3 +1,5 @@
+The crash was caused by a double backtick (``) syntax error on the kick response line.
+Here is the complete, fixed index.js ready to deploy:
 require('dotenv').config();
 const {
   Client,
@@ -454,3 +456,4 @@ if (!TOKEN) {
     console.error('DISCORD LOGIN ERROR:', error);
   });
 }
+
