@@ -48,7 +48,6 @@ const tempRooms = new Map();
    SETTINGS
 ===================================================== */
 
-const DELETE_DELAY = 0;
 const CLEANUP_INTERVAL = 3000;
 
 /* =====================================================
@@ -64,6 +63,7 @@ function log(message) {
 ===================================================== */
 
 const commands = [
+
   new SlashCommandBuilder()
     .setName('kick')
     .setDescription('Kick a member from the server')
@@ -95,6 +95,7 @@ const commands = [
         .setDescription('Reason for the ban')
         .setRequired(false)
     )
+
 ].map(command => command.toJSON());
 
 /* =====================================================
@@ -104,113 +105,179 @@ const commands = [
 function buildPanel() {
 
   const embed = new EmbedBuilder()
+
     .setColor(0x2b8cff)
-    .setTitle('🎧 TempVoice Interface')
+
+    .setTitle('🎧 FUEGOS TEMPVOICE')
+
     .setDescription(
-      'Manage your temporary voice channel using the controls below.'
+      '**Your temporary voice room is ready.**\n' +
+      'Use the controls below to manage your room.'
     )
-    .addFields({
-      name: '\u200B',
-      value:
-        '✏️ **NAME**　 👥 **LIMIT**　 🔒 **PRIVACY**　 ⏳ **WAITING ROOM**　 💬 **CHAT**\n\n' +
-        '🟢 **TRUST**　 🔴 **UNTRUST**　 🔗 **INVITE**　 📵 **KICK**　 🌐 **REGION**\n\n' +
-        '🚫 **BLOCK**　 🔓 **UNBLOCK**　 👑 **CLAIM**　 🔄 **TRANSFER**　 🗑️ **DELETE**',
-      inline: false
-    })
+
+    .addFields(
+
+      {
+        name: '━━━━━━━━ ROOM SETTINGS ━━━━━━━━',
+        value:
+          '✏️ **Rename** — Change your room name\n' +
+          '👥 **Limit** — Set maximum users\n' +
+          '👁️ **Visibility** — Show / hide your room\n' +
+          '🔒 **Privacy** — Lock / unlock your room\n' +
+          '⏳ **Waiting Room** — Control room entry',
+        inline: false
+      },
+
+      {
+        name: '━━━━━━━━ MEMBER MANAGEMENT ━━━━━━━━',
+        value:
+          '🟢 **Trust** — Allow a member to join\n' +
+          '🔴 **Untrust** — Remove trusted access\n' +
+          '📵 **Kick** — Remove someone from your room\n' +
+          '🚫 **Block** — Prevent someone from joining\n' +
+          '🔓 **Unblock** — Remove a block',
+        inline: false
+      },
+
+      {
+        name: '━━━━━━━━ OWNER CONTROLS ━━━━━━━━',
+        value:
+          '👑 **Claim** — Claim an available room\n' +
+          '🔄 **Transfer** — Transfer ownership\n' +
+          '🔗 **Invite** — Create a room invite\n' +
+          '🌐 **Region** — Change voice region\n' +
+          '🗑️ **Delete** — Delete your room',
+        inline: false
+      }
+
+    )
+
     .setFooter({
-      text: 'Fuegos TempVoice • Manage your voice room easily.'
+      text:
+        'Fuegos TempVoice • Only the room owner can manage these controls.'
     });
+
+  /* =================================================
+     ROW 1
+  ================================================= */
 
   const row1 = new ActionRowBuilder().addComponents(
 
     new ButtonBuilder()
       .setCustomId('rename')
       .setEmoji('✏️')
+      .setLabel('Rename')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('limit')
       .setEmoji('👥')
+      .setLabel('Limit')
+      .setStyle(ButtonStyle.Secondary),
+
+    new ButtonBuilder()
+      .setCustomId('visibility')
+      .setEmoji('👁️')
+      .setLabel('Visibility')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('privacy')
       .setEmoji('🔒')
+      .setLabel('Privacy')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('waiting')
       .setEmoji('⏳')
-      .setStyle(ButtonStyle.Secondary),
-
-    new ButtonBuilder()
-      .setCustomId('chat')
-      .setEmoji('💬')
+      .setLabel('Waiting')
       .setStyle(ButtonStyle.Secondary)
 
   );
+
+  /* =================================================
+     ROW 2
+  ================================================= */
 
   const row2 = new ActionRowBuilder().addComponents(
 
     new ButtonBuilder()
       .setCustomId('trust')
       .setEmoji('🟢')
+      .setLabel('Trust')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('untrust')
       .setEmoji('🔴')
-      .setStyle(ButtonStyle.Secondary),
-
-    new ButtonBuilder()
-      .setCustomId('invite')
-      .setEmoji('🔗')
+      .setLabel('Untrust')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('kick')
       .setEmoji('📵')
+      .setLabel('Kick')
       .setStyle(ButtonStyle.Secondary),
-
-    new ButtonBuilder()
-      .setCustomId('region')
-      .setEmoji('🌐')
-      .setStyle(ButtonStyle.Secondary)
-
-  );
-
-  const row3 = new ActionRowBuilder().addComponents(
 
     new ButtonBuilder()
       .setCustomId('block')
       .setEmoji('🚫')
+      .setLabel('Block')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('unblock')
       .setEmoji('🔓')
-      .setStyle(ButtonStyle.Secondary),
+      .setLabel('Unblock')
+      .setStyle(ButtonStyle.Secondary)
+
+  );
+
+  /* =================================================
+     ROW 3
+  ================================================= */
+
+  const row3 = new ActionRowBuilder().addComponents(
 
     new ButtonBuilder()
       .setCustomId('claim')
       .setEmoji('👑')
+      .setLabel('Claim')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('transfer')
       .setEmoji('🔄')
+      .setLabel('Transfer')
+      .setStyle(ButtonStyle.Secondary),
+
+    new ButtonBuilder()
+      .setCustomId('invite')
+      .setEmoji('🔗')
+      .setLabel('Invite')
+      .setStyle(ButtonStyle.Secondary),
+
+    new ButtonBuilder()
+      .setCustomId('region')
+      .setEmoji('🌐')
+      .setLabel('Region')
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
       .setCustomId('delete')
       .setEmoji('🗑️')
+      .setLabel('Delete')
       .setStyle(ButtonStyle.Danger)
 
   );
 
   return {
     embeds: [embed],
-    components: [row1, row2, row3]
+    components: [
+      row1,
+      row2,
+      row3
+    ]
   };
 }
 
@@ -230,7 +297,8 @@ async function createTempRoom(member, createChannel) {
 
       type: ChannelType.GuildVoice,
 
-      parent: createChannel.parentId || undefined,
+      parent:
+        createChannel.parentId || undefined,
 
       permissionOverwrites: [
 
@@ -261,25 +329,26 @@ async function createTempRoom(member, createChannel) {
 
     });
 
-    tempRooms.set(room.id, member.id);
-
-    log(
-      `CREATED: ${room.name} | ID: ${room.id} | OWNER: ${member.user.tag}`
+    tempRooms.set(
+      room.id,
+      member.id
     );
 
-    /* Move user into room */
+    log(
+      `CREATED: ${room.name} | ${room.id} | OWNER: ${member.user.tag}`
+    );
 
     await member.voice.setChannel(room);
 
-    /* Send control panel */
-
-    await room.send(buildPanel());
-
-    /* Safety check */
+    await room.send(
+      buildPanel()
+    );
 
     setTimeout(() => {
 
-      checkAndDeleteRoom(room.id);
+      checkAndDeleteRoom(
+        room.id
+      );
 
     }, 500);
 
@@ -302,16 +371,22 @@ async function createTempRoom(member, createChannel) {
 
 async function checkAndDeleteRoom(channelId) {
 
-  if (!tempRooms.has(channelId)) {
+  if (
+    !tempRooms.has(channelId)
+  ) {
     return;
   }
 
   const channel =
-    client.channels.cache.get(channelId);
+    client.channels.cache.get(
+      channelId
+    );
 
   if (!channel) {
 
-    tempRooms.delete(channelId);
+    tempRooms.delete(
+      channelId
+    );
 
     return;
   }
@@ -320,23 +395,27 @@ async function checkAndDeleteRoom(channelId) {
     channel.type !== ChannelType.GuildVoice
   ) {
 
-    tempRooms.delete(channelId);
+    tempRooms.delete(
+      channelId
+    );
 
     return;
   }
 
-  /* Never delete if somebody is inside */
+  /* Do not delete while occupied */
 
-  if (channel.members.size > 0) {
+  if (
+    channel.members.size > 0
+  ) {
     return;
   }
 
-  /* Remove from database first */
-
-  tempRooms.delete(channelId);
+  tempRooms.delete(
+    channelId
+  );
 
   log(
-    `DELETING EMPTY ROOM: ${channel.name} | ${channel.id}`
+    `DELETING EMPTY ROOM: ${channel.name}`
   );
 
   try {
@@ -369,7 +448,9 @@ async function cleanupAllRooms() {
     ...tempRooms.keys()
   ];
 
-  for (const channelId of rooms) {
+  for (
+    const channelId of rooms
+  ) {
 
     await checkAndDeleteRoom(
       channelId
@@ -389,12 +470,14 @@ client.on(
     try {
 
       /* ===============================================
-         CREATE TEMP ROOM
+         CREATE
       =============================================== */
 
       if (
-        newState.channelId === CREATE_CHANNEL_ID &&
-        oldState.channelId !== CREATE_CHANNEL_ID
+        newState.channelId ===
+          CREATE_CHANNEL_ID &&
+        oldState.channelId !==
+          CREATE_CHANNEL_ID
       ) {
 
         const member =
@@ -421,12 +504,14 @@ client.on(
       }
 
       /* ===============================================
-         DELETE WHEN USER LEAVES
+         DELETE WHEN EMPTY
       =============================================== */
 
       if (
         oldState.channelId &&
-        tempRooms.has(oldState.channelId)
+        tempRooms.has(
+          oldState.channelId
+        )
       ) {
 
         const channelId =
@@ -436,13 +521,9 @@ client.on(
           `USER LEFT TEMP ROOM: ${channelId}`
         );
 
-        /* Immediate check */
-
         await checkAndDeleteRoom(
           channelId
         );
-
-        /* Backup timing check */
 
         setTimeout(() => {
 
@@ -450,7 +531,7 @@ client.on(
             channelId
           );
 
-        }, DELETE_DELAY + 500);
+        }, 500);
       }
 
     } catch (error) {
@@ -474,11 +555,9 @@ client.on(
 
     try {
 
-      /* ===============================================
-         SECURITY COMMANDS
-         /kick
-         /ban
-      =============================================== */
+      /* =================================================
+         SERVER /KICK + /BAN
+      ================================================= */
 
       if (
         interaction.isChatInputCommand()
@@ -505,8 +584,6 @@ client.on(
           interaction.member.permissions.has(
             requiredPermission
           );
-
-        /* Permission check */
 
         if (
           !isAdmin &&
@@ -539,10 +616,6 @@ client.on(
             .fetch(user.id)
             .catch(() => null);
 
-        /* =============================================
-           MEMBER NOT FOUND
-        ============================================= */
-
         if (!member) {
 
           return interaction.reply({
@@ -555,12 +628,11 @@ client.on(
           });
         }
 
-        /* =============================================
-           CANNOT MODERATE SELF
-        ============================================= */
+        /* Cannot moderate self */
 
         if (
-          user.id === interaction.user.id
+          user.id ===
+          interaction.user.id
         ) {
 
           return interaction.reply({
@@ -573,12 +645,11 @@ client.on(
           });
         }
 
-        /* =============================================
-           SERVER OWNER PROTECTION
-        ============================================= */
+        /* Server owner */
 
         if (
-          user.id === interaction.guild.ownerId
+          user.id ===
+          interaction.guild.ownerId
         ) {
 
           return interaction.reply({
@@ -591,15 +662,26 @@ client.on(
           });
         }
 
-        /* =============================================
-           BOT ROLE PROTECTION
-        ============================================= */
+        /* Bot hierarchy */
 
         const botMember =
           interaction.guild.members.me;
 
         if (
-          !botMember ||
+          !botMember
+        ) {
+
+          return interaction.reply({
+
+            content:
+              '❌ I cannot find my bot member in this server.',
+
+            ephemeral: true
+
+          });
+        }
+
+        if (
           member.roles.highest.position >=
           botMember.roles.highest.position
         ) {
@@ -614,9 +696,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           MODERATOR ROLE PROTECTION
-        ============================================= */
+        /* Moderator hierarchy */
 
         if (
           !isAdmin &&
@@ -639,7 +719,8 @@ client.on(
         ============================================= */
 
         if (
-          interaction.commandName === 'kick'
+          interaction.commandName ===
+          'kick'
         ) {
 
           try {
@@ -665,7 +746,7 @@ client.on(
             return interaction.reply({
 
               content:
-                '❌ I could not kick this member. Check the bot role hierarchy and permissions.',
+                '❌ Kick failed. Check my **Kick Members** permission and role position.',
 
               ephemeral: true
 
@@ -678,7 +759,8 @@ client.on(
         ============================================= */
 
         if (
-          interaction.commandName === 'ban'
+          interaction.commandName ===
+          'ban'
         ) {
 
           try {
@@ -709,7 +791,7 @@ client.on(
             return interaction.reply({
 
               content:
-                '❌ I could not ban this member. Check the bot role hierarchy and permissions.',
+                '❌ Ban failed. Check my **Ban Members** permission and role position.',
 
               ephemeral: true
 
@@ -718,18 +800,22 @@ client.on(
         }
       }
 
-      /* ===============================================
+      /* =================================================
          BUTTONS
-      =============================================== */
+      ================================================= */
 
-      if (interaction.isButton()) {
+      if (
+        interaction.isButton()
+      ) {
 
         const channel =
           interaction.channel;
 
         if (
           !channel ||
-          !tempRooms.has(channel.id)
+          !tempRooms.has(
+            channel.id
+          )
         ) {
 
           return interaction.reply({
@@ -743,14 +829,17 @@ client.on(
         }
 
         const ownerId =
-          tempRooms.get(channel.id);
+          tempRooms.get(
+            channel.id
+          );
 
         /* =============================================
            CLAIM
         ============================================= */
 
         if (
-          interaction.customId === 'claim'
+          interaction.customId ===
+          'claim'
         ) {
 
           if (
@@ -769,7 +858,9 @@ client.on(
             });
           }
 
-          if (ownerId) {
+          if (
+            ownerId
+          ) {
 
             await channel
               .permissionOverwrites
@@ -813,7 +904,8 @@ client.on(
         ============================================= */
 
         if (
-          interaction.user.id !== ownerId
+          interaction.user.id !==
+          ownerId
         ) {
 
           return interaction.reply({
@@ -827,7 +919,7 @@ client.on(
         }
 
         /* =============================================
-           BUTTON ACTIONS
+           BUTTON SWITCH
         ============================================= */
 
         switch (
@@ -851,7 +943,9 @@ client.on(
 
             const input =
               new TextInputBuilder()
-                .setCustomId('name')
+                .setCustomId(
+                  'name'
+                )
                 .setLabel(
                   'New room name'
                 )
@@ -861,12 +955,18 @@ client.on(
                 .setStyle(
                   TextInputStyle.Short
                 )
-                .setMaxLength(80)
-                .setRequired(true);
+                .setMaxLength(
+                  80
+                )
+                .setRequired(
+                  true
+                );
 
             modal.addComponents(
               new ActionRowBuilder()
-                .addComponents(input)
+                .addComponents(
+                  input
+                )
             );
 
             return interaction.showModal(
@@ -891,25 +991,114 @@ client.on(
 
             const input =
               new TextInputBuilder()
-                .setCustomId('limit')
+                .setCustomId(
+                  'limit'
+                )
                 .setLabel(
                   '0 = Unlimited | 1-99'
                 )
-                .setPlaceholder('5')
+                .setPlaceholder(
+                  '5'
+                )
                 .setStyle(
                   TextInputStyle.Short
                 )
-                .setMaxLength(2)
-                .setRequired(true);
+                .setMaxLength(
+                  2
+                )
+                .setRequired(
+                  true
+                );
 
             modal.addComponents(
               new ActionRowBuilder()
-                .addComponents(input)
+                .addComponents(
+                  input
+                )
             );
 
             return interaction.showModal(
               modal
             );
+          }
+
+          /* =========================================
+             VISIBILITY
+          ========================================= */
+
+          case 'visibility': {
+
+            const everyone =
+              channel.guild.roles.everyone;
+
+            const overwrite =
+              channel.permissionOverwrites.cache.get(
+                everyone.id
+              );
+
+            const currentlyHidden =
+              overwrite &&
+              overwrite.deny.has(
+                PermissionsBitField.Flags.ViewChannel
+              );
+
+            if (
+              currentlyHidden
+            ) {
+
+              await channel
+                .permissionOverwrites
+                .edit(
+                  everyone,
+                  {
+                    ViewChannel: true,
+                    Connect: true
+                  }
+                );
+
+              return interaction.reply({
+
+                content:
+                  '👁️ **Room is now visible.**\nEveryone can see and join your room.',
+
+                ephemeral: true
+
+              });
+            }
+
+            await channel
+              .permissionOverwrites
+              .edit(
+                everyone,
+                {
+                  ViewChannel: false,
+                  Connect: false
+                }
+              );
+
+            await channel
+              .permissionOverwrites
+              .edit(
+                ownerId,
+                {
+                  ViewChannel: true,
+                  Connect: true,
+                  Speak: true,
+                  ManageChannels: true,
+                  MoveMembers: true,
+                  MuteMembers: true,
+                  DeafenMembers: true
+                }
+              );
+
+            return interaction.reply({
+
+              content:
+                '🙈 **Room is now hidden.**\nOnly users with permission can see or join it.',
+
+              ephemeral: true
+
+            });
           }
 
           /* =========================================
@@ -932,7 +1121,9 @@ client.on(
                 PermissionsBitField.Flags.Connect
               );
 
-            if (locked) {
+            if (
+              locked
+            ) {
 
               await channel
                 .permissionOverwrites
@@ -947,7 +1138,7 @@ client.on(
               return interaction.reply({
 
                 content:
-                  '🔓 Room unlocked.',
+                  '🔓 **Room unlocked.**',
 
                 ephemeral: true
 
@@ -979,7 +1170,7 @@ client.on(
             return interaction.reply({
 
               content:
-                '🔒 Room locked.',
+                '🔒 **Room locked.**',
 
               ephemeral: true
 
@@ -987,7 +1178,7 @@ client.on(
           }
 
           /* =========================================
-             WAITING ROOM
+             WAITING
           ========================================= */
 
           case 'waiting': {
@@ -1017,27 +1208,12 @@ client.on(
             return interaction.reply({
 
               content:
-                '⏳ Waiting room enabled.',
+                '⏳ **Waiting room enabled.**',
 
               ephemeral: true
 
             });
           }
-
-          /* =========================================
-             CHAT
-          ========================================= */
-
-          case 'chat':
-
-            return interaction.reply({
-
-              content:
-                '💬 Room chat is controlled by Discord channel permissions.',
-
-              ephemeral: true
-
-            });
 
           /* =========================================
              INVITE
@@ -1047,8 +1223,11 @@ client.on(
 
             const invite =
               await channel.createInvite({
+
                 maxAge: 3600,
+
                 maxUses: 0
+
               });
 
             return interaction.reply({
@@ -1084,8 +1263,12 @@ client.on(
                       .setPlaceholder(
                         'Select member to trust'
                       )
-                      .setMinValues(1)
-                      .setMaxValues(1)
+                      .setMinValues(
+                        1
+                      )
+                      .setMaxValues(
+                        1
+                      )
 
                   )
 
@@ -1118,8 +1301,12 @@ client.on(
                       .setPlaceholder(
                         'Select member to untrust'
                       )
-                      .setMinValues(1)
-                      .setMaxValues(1)
+                      .setMinValues(
+                        1
+                      )
+                      .setMaxValues(
+                        1
+                      )
 
                   )
 
@@ -1130,7 +1317,7 @@ client.on(
             });
 
           /* =========================================
-             TEMP ROOM KICK
+             ROOM KICK
           ========================================= */
 
           case 'kick':
@@ -1152,8 +1339,12 @@ client.on(
                       .setPlaceholder(
                         'Select member to kick'
                       )
-                      .setMinValues(1)
-                      .setMaxValues(1)
+                      .setMinValues(
+                        1
+                      )
+                      .setMaxValues(
+                        1
+                      )
 
                   )
 
@@ -1180,7 +1371,9 @@ client.on(
 
             const input =
               new TextInputBuilder()
-                .setCustomId('region')
+                .setCustomId(
+                  'region'
+                )
                 .setLabel(
                   'Region'
                 )
@@ -1190,11 +1383,15 @@ client.on(
                 .setStyle(
                   TextInputStyle.Short
                 )
-                .setRequired(true);
+                .setRequired(
+                  true
+                );
 
             modal.addComponents(
               new ActionRowBuilder()
-                .addComponents(input)
+                .addComponents(
+                  input
+                )
             );
 
             return interaction.showModal(
@@ -1225,8 +1422,12 @@ client.on(
                       .setPlaceholder(
                         'Select member to block'
                       )
-                      .setMinValues(1)
-                      .setMaxValues(1)
+                      .setMinValues(
+                        1
+                      )
+                      .setMaxValues(
+                        1
+                      )
 
                   )
 
@@ -1259,8 +1460,12 @@ client.on(
                       .setPlaceholder(
                         'Select member to unblock'
                       )
-                      .setMinValues(1)
-                      .setMaxValues(1)
+                      .setMinValues(
+                        1
+                      )
+                      .setMaxValues(
+                        1
+                      )
 
                   )
 
@@ -1293,8 +1498,12 @@ client.on(
                       .setPlaceholder(
                         'Select new owner'
                       )
-                      .setMinValues(1)
-                      .setMaxValues(1)
+                      .setMinValues(
+                        1
+                      )
+                      .setMaxValues(
+                        1
+                      )
 
                   )
 
@@ -1305,7 +1514,7 @@ client.on(
             });
 
           /* =========================================
-             DELETE ROOM
+             DELETE
           ========================================= */
 
           case 'delete': {
@@ -1323,25 +1532,27 @@ client.on(
 
             });
 
-            await channel.delete(
-              'Room deleted by owner'
-            ).catch(error => {
+            await channel
+              .delete(
+                'Room deleted by owner'
+              )
+              .catch(error => {
 
-              console.error(
-                '[TEMPVOICE] MANUAL DELETE ERROR:',
-                error
-              );
+                console.error(
+                  '[TEMPVOICE] MANUAL DELETE ERROR:',
+                  error
+                );
 
-            });
+              });
 
             return;
           }
         }
       }
 
-      /* ===============================================
+      /* =================================================
          USER SELECT MENUS
-      =============================================== */
+      ================================================= */
 
       if (
         interaction.isUserSelectMenu()
@@ -1352,7 +1563,9 @@ client.on(
 
         if (
           !channel ||
-          !tempRooms.has(channel.id)
+          !tempRooms.has(
+            channel.id
+          )
         ) {
 
           return interaction.update({
@@ -1366,10 +1579,13 @@ client.on(
         }
 
         const ownerId =
-          tempRooms.get(channel.id);
+          tempRooms.get(
+            channel.id
+          );
 
         if (
-          interaction.user.id !== ownerId
+          interaction.user.id !==
+          ownerId
         ) {
 
           return interaction.update({
@@ -1402,9 +1618,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           TRUST
-        ============================================= */
+        /* TRUST */
 
         if (
           interaction.customId ===
@@ -1432,9 +1646,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           UNTRUST
-        ============================================= */
+        /* UNTRUST */
 
         if (
           interaction.customId ===
@@ -1457,7 +1669,9 @@ client.on(
 
           await channel
             .permissionOverwrites
-            .delete(member.id)
+            .delete(
+              member.id
+            )
             .catch(() => {});
 
           return interaction.update({
@@ -1470,9 +1684,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           ROOM KICK
-        ============================================= */
+        /* ROOM KICK */
 
         if (
           interaction.customId ===
@@ -1508,40 +1720,20 @@ client.on(
             });
           }
 
-          try {
+          await member.voice
+            .disconnect();
 
-            await member.voice.disconnect();
+          return interaction.update({
 
-            return interaction.update({
+            content:
+              `📵 <@${member.id}> was **kicked from the room**.`,
 
-              content:
-                `📵 <@${member.id}> was **kicked from the room**.`,
+            components: []
 
-              components: []
-
-            });
-
-          } catch (error) {
-
-            console.error(
-              '[TEMPVOICE] ROOM KICK ERROR:',
-              error
-            );
-
-            return interaction.update({
-
-              content:
-                '❌ I could not disconnect that member.',
-
-              components: []
-
-            });
-          }
+          });
         }
 
-        /* =============================================
-           BLOCK
-        ============================================= */
+        /* BLOCK */
 
         if (
           interaction.customId ===
@@ -1572,8 +1764,6 @@ client.on(
               }
             );
 
-          /* Disconnect if currently inside */
-
           if (
             member.voice.channelId ===
             channel.id
@@ -1595,9 +1785,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           UNBLOCK
-        ============================================= */
+        /* UNBLOCK */
 
         if (
           interaction.customId ===
@@ -1606,7 +1794,9 @@ client.on(
 
           await channel
             .permissionOverwrites
-            .delete(member.id)
+            .delete(
+              member.id
+            )
             .catch(() => {});
 
           return interaction.update({
@@ -1619,9 +1809,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           TRANSFER
-        ============================================= */
+        /* TRANSFER */
 
         if (
           interaction.customId ===
@@ -1659,7 +1847,9 @@ client.on(
 
           await channel
             .permissionOverwrites
-            .delete(ownerId)
+            .delete(
+              ownerId
+            )
             .catch(() => {});
 
           await channel
@@ -1693,9 +1883,9 @@ client.on(
         }
       }
 
-      /* ===============================================
+      /* =================================================
          MODALS
-      =============================================== */
+      ================================================= */
 
       if (
         interaction.isModalSubmit()
@@ -1706,7 +1896,9 @@ client.on(
 
         if (
           !channel ||
-          !tempRooms.has(channel.id)
+          !tempRooms.has(
+            channel.id
+          )
         ) {
 
           return interaction.reply({
@@ -1720,10 +1912,13 @@ client.on(
         }
 
         const ownerId =
-          tempRooms.get(channel.id);
+          tempRooms.get(
+            channel.id
+          );
 
         if (
-          interaction.user.id !== ownerId
+          interaction.user.id !==
+          ownerId
         ) {
 
           return interaction.reply({
@@ -1736,9 +1931,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           RENAME
-        ============================================= */
+        /* RENAME */
 
         if (
           interaction.customId ===
@@ -1778,9 +1971,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           LIMIT
-        ============================================= */
+        /* LIMIT */
 
         if (
           interaction.customId ===
@@ -1828,9 +2019,7 @@ client.on(
           });
         }
 
-        /* =============================================
-           REGION
-        ============================================= */
+        /* REGION */
 
         if (
           interaction.customId ===
@@ -1912,13 +2101,14 @@ client.on(
           ephemeral: true
 
         }).catch(() => {});
+
       }
     }
   }
 );
 
 /* =====================================================
-   BOT READY
+   READY
 ===================================================== */
 
 client.once(
@@ -1941,7 +2131,7 @@ client.once(
     );
 
     /* ===============================================
-       REGISTER /KICK AND /BAN
+       REGISTER SLASH COMMANDS PER SERVER
     =============================================== */
 
     try {
@@ -1949,19 +2139,34 @@ client.once(
       const rest =
         new REST({
           version: '10'
-        }).setToken(TOKEN);
+        }).setToken(
+          TOKEN
+        );
 
-      await rest.put(
-        Routes.applicationCommands(
-          client.user.id
-        ),
-        {
-          body: commands
-        }
-      );
+      for (
+        const guild of client.guilds.cache.values()
+      ) {
+
+        await rest.put(
+
+          Routes.applicationGuildCommands(
+            client.user.id,
+            guild.id
+          ),
+
+          {
+            body: commands
+          }
+
+        );
+
+        log(
+          `SLASH COMMANDS REGISTERED: ${guild.name}`
+        );
+      }
 
       log(
-        'SECURITY COMMANDS REGISTERED: /kick /ban'
+        'AVAILABLE COMMANDS: /kick /ban'
       );
 
     } catch (error) {
@@ -2013,8 +2218,9 @@ if (!TOKEN) {
 
 } else {
 
-  client.login(TOKEN)
-
+  client.login(
+    TOKEN
+  )
     .then(() => {
 
       console.log(
@@ -2022,7 +2228,6 @@ if (!TOKEN) {
       );
 
     })
-
     .catch(error => {
 
       console.error(
