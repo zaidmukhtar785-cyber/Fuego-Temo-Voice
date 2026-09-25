@@ -65,54 +65,78 @@ function getOwnerId(channel) {
 }
 
 /* =====================================================
+   EMOJI CONFIGURATION
+===================================================== */
+
+const EMOJIS = {
+  rename: '1553023298026086412',    // :skribbl:
+  members: '1261941119965593610',   // :Members: (LIMIT & TRUST)
+  claim: '1553022553386385458',     // <a:crown:...> (Animated)
+  chat: '1553023637702058044',      // :val_Chatting:
+  block: '1553023862621347997',     // :block:
+  
+  // Empty values fall back to clean standard emojis automatically
+  privacy: '',
+  waiting: '',
+  untrust: '',
+  invite: '',
+  kick: '',
+  region: '',
+  unblock: '',
+  transfer: ''
+};
+
+/* =====================================================
    EMBED
 ===================================================== */
 
 function buildPanel(channel) {
+  const FUEGOS_BANNER_URL = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop';
+
+  const renameTag = EMOJIS.rename ? `<:skribbl:${EMOJIS.rename}>` : '💳';
+  const membersTag = EMOJIS.members ? `<:Members:${EMOJIS.members}>` : '👥';
+  const claimTag = EMOJIS.claim ? `<a:crown:${EMOJIS.claim}>` : '👑';
+  const chatTag = EMOJIS.chat ? `<:val_Chatting:${EMOJIS.chat}>` : '💬';
+  const blockTag = EMOJIS.block ? `<:block:${EMOJIS.block}>` : '🚫';
+
   const embed = new EmbedBuilder()
-    .setColor(0x2b8cff)
-    .setTitle('🎧 TempVoice Interface')
+    .setColor(0xFF2A55)
+    .setTitle('TempVoice Interface')
+    .setImage(FUEGOS_BANNER_URL)
     .setDescription(
-      'This interface can be used to manage temporary voice channels.\n' +
-      'Press the buttons below to use the interface.'
-    )
-    .addFields({
-      name: '\u200B',
-      value:
-        '✏️ **NAME**　 👥 **LIMIT**　 🔒 **PRIVACY**　 ⏳ **WAITING ROOM**　 💬 **CHAT**\n\n' +
-        '🟢 **TRUST**　 🔴 **UNTRUST**　 🔗 **INVITE**　 📵 **KICK**　 🌐 **REGION**\n\n' +
-        '🚫 **BLOCK**　 🔓 **UNBLOCK**　 👑 **CLAIM**　 🔄 **TRANSFER**　 🗑️ **DELETE**',
-      inline: false
-    })
-    .setFooter({
-      text: 'Fuegos TempVoice • Manage your voice room easily.'
-    });
+      'This interface can be used to manage temporary voice channels. More options are available with **/voice** commands.\n\n' +
+      `${renameTag} **NAME**　${membersTag} **LIMIT**　🔒 **PRIVACY**　🕒 **WAITING ROOM**　${chatTag} **CHAT**\n\n` +
+      `${membersTag} **TRUST**　🚷 **UNTRUST**　🔗 **INVITE**　📞 **KICK**　🌐 **REGION**\n\n` +
+      `${blockTag} **BLOCK**　🔓 **UNBLOCK**　${claimTag} **CLAIM**　🔄 **TRANSFER**　🗑️ **DELETE**\n\n` +
+      'Press the buttons below to use the interface'
+    );
 
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('rename').setEmoji('✏️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('limit').setEmoji('👥').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('privacy').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('waiting').setEmoji('⏳').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('chat').setEmoji('💬').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('rename').setEmoji(EMOJIS.rename || '💳').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('limit').setEmoji(EMOJIS.members || '👥').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('privacy').setEmoji(EMOJIS.privacy || '🔒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('waiting').setEmoji(EMOJIS.waiting || '🕒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('chat').setEmoji(EMOJIS.chat || '💬').setStyle(ButtonStyle.Secondary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('trust').setEmoji('🟢').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('untrust').setEmoji('🔴').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('invite').setEmoji('🔗').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('kick').setEmoji('📵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('region').setEmoji('🌐').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('trust').setEmoji(EMOJIS.members || '👤').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('untrust').setEmoji(EMOJIS.untrust || '🚷').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('invite').setEmoji(EMOJIS.invite || '🔗').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('kick').setEmoji(EMOJIS.kick || '📞').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('region').setEmoji(EMOJIS.region || '🌐').setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('block').setEmoji('🚫').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('unblock').setEmoji('🔓').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('claim').setEmoji('👑').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('transfer').setEmoji('🔄').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('block').setEmoji(EMOJIS.block || '🚫').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('unblock').setEmoji(EMOJIS.unblock || '🔓').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('claim').setEmoji(EMOJIS.claim || '👑').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('transfer').setEmoji(EMOJIS.transfer || '🔄').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('delete').setEmoji('🗑️').setStyle(ButtonStyle.Danger)
   );
 
   return {
+    content: 'Welcome to your custom VC.',
     embeds: [embed],
     components: [row1, row2, row3]
   };
