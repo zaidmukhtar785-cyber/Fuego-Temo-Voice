@@ -22,7 +22,7 @@ const client = new Client({
 });
 
 /* =====================================================
-   RAILWAY VARIABLES (EXACT MATCH FOR YOUR DASHBOARD)
+   RAILWAY VARIABLES
 ===================================================== */
 const TOKEN = process.env.TOKEN;
 const CREATE_CHANNEL_ID = process.env.CREATE_CHANNEL_ID;
@@ -416,7 +416,7 @@ client.on('interactionCreate', async interaction => {
             return interaction.reply({ content: '❌ That user is not inside this room.', ephemeral: true });
           }
           await member.voice.disconnect();
-          return interaction.reply({ content: ``📵 <@${member.id}> was kicked.`, ephemeral: true });
+          return interaction.reply({ content: `📵 <@${member.id}> was kicked.`, ephemeral: true });
         }
         case 'transfer_modal': {
           if (member.voice.channelId !== channel.id) {
