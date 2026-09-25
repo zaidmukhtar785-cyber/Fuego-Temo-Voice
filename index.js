@@ -66,12 +66,13 @@ function getOwnerId(channel) {
 
 const EMOJIS = {
   rename: '1553023298026086412',    // :skribbl:
-  limit: '🔢',
-  trust: '1261941119965593610',     // :Members:
-  claim: '1553022553386385458',     // <a:crown:...>
+  limit: '🔢',                      // Unique icon for LIMIT
+  trust: '1261941119965593610',     // :Members: for TRUST
+  claim: '1553022553386385458',     // <a:crown:...> (Animated)
   chat: '1553023637702058044',      // :val_Chatting:
   block: '1553023862621347997',     // :block:
   
+  // Clean fallbacks for remaining icons
   privacy: '🔒',
   waiting: '🕒',
   untrust: '🚷',
@@ -169,6 +170,7 @@ client.once('ready', () => {
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
   try {
+    /* --- CREATE TEMP VC --- */
     if (newState.channelId === CREATE_CHANNEL_ID && oldState.channelId !== CREATE_CHANNEL_ID) {
       const createChannel = newState.channel;
       const guild = newState.guild;
@@ -209,13 +211,28 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       await room.send(buildPanel(room)).catch(() => {});
     }
 
-    if (oldState.channel && oldState.channel.id !== CREATE_CHANNEL_ID && isTempRoom(oldState.channel)) {
-      const fetchedChannel = await oldState.guild.channels.fetch(oldState.channel.id).catch(() => null);
+    /* --- FAST AUTO-DELETE ON LEAVE OR MOVE --- */
+    if (
+      oldState.channel &&
+      oldState.channel.id !== CREATE_CHANNEL_ID &&
+      isTempRoom(oldState.channel)
+    ) {
+      const leftChannel = oldState.channel;
 
-      if (fetchedChannel && fetchedChannel.members.size === 0) {
-        tempRooms.delete(fetchedChannel.id);
-        await fetchedChannel.delete().catch(() => {});
-      }
+      // 300ms delay: ultra-fast cleanup while preventing Discord API race conditions
+      setTimeout(async () => {
+        try {
+          const fetchedChannel = await leftChannel.guild.channels.fetch(leftChannel.id).catch(() => null);
+
+          if (fetchedChannel && fetchedChannel.members.size === 0) {
+            tempRooms.delete(fetchedChannel.id);
+            await fetchedChannel.delete().catch(() => {});
+            console.log(`DELETED EMPTY TEMP VC: ${getDisplayName(fetchedChannel)}`);
+          }
+        } catch (err) {
+          // Ignore if already deleted
+        }
+      }, 300);
     }
   } catch (error) {
     console.error('VOICE STATE ERROR:', error);
@@ -244,7 +261,7 @@ client.on('interactionCreate', async interaction => {
     ================================================= */
 
     if (interaction.isButton()) {
-      // CLAIM (Any user can claim if owner left)
+      // CLAIM
       if (interaction.customId === 'claim') {
         const oldOwner = ownerId ? await interaction.guild.members.fetch(ownerId).catch(() => null) : null;
 
@@ -274,7 +291,7 @@ client.on('interactionCreate', async interaction => {
         return interaction.reply({ content: 'Only the room owner can use this.', ephemeral: true });
       }
 
-      // MODALS (Text Input Settings)
+      // MODALS (Text Inputs)
       if (interaction.customId === 'rename') {
         const modal = new ModalBuilder().setCustomId('rename_modal').setTitle('Rename Room');
         const input = new TextInputBuilder()
@@ -347,7 +364,7 @@ client.on('interactionCreate', async interaction => {
         return;
       }
 
-      // USER SELECT DROPDOWNS (No IDs needed!)
+      // USER SELECT DROPDOWNS
       if (interaction.customId === 'invite') {
         return interaction.reply({
           content: 'Select a user to send a direct DM invite to:',
@@ -426,7 +443,7 @@ client.on('interactionCreate', async interaction => {
         const invite = await channel.createInvite({ maxAge: 3600, maxUses: 1 });
         
         try {
-          await targetMember.send(`📨 You have been invited to join **${channel.name}** by <@${interaction.user.id}>!\nJoin here: ${invite.url}`);
+          await targetMember.send(`📨 You have been invited to join **${channel.name}** by <@${interaction.user.id}>!\nJoin here:${invite.url}`);
           return interaction.update({ content: `✅ DM Invite sent directly to <@${targetMember.id}>!`, components: [] });
         } catch (err) {
           return interaction.update({ content: `⚠️ Could not DM <@${targetMember.id}> (DMs might be closed). Here is the invite link: ${invite.url}`, components: [] });
@@ -452,7 +469,7 @@ client.on('interactionCreate', async interaction => {
         if (targetMember.voice.channelId !== channel.id) return interaction.update({ content: '❌ That user is not inside this voice room.', components: [] });
 
         await targetMember.voice.disconnect();
-        return interaction.update({ content: `📵 <@${targetMember.id}> was kicked from the channel.`, components: [] });
+        return interaction.update({ content: ``📵 <@${targetMember.id}> was kicked from the channel.`, components: [] });
       }
 
       // BLOCK
